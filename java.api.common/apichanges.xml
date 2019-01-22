@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<?xml-stylesheet type="text/xml" href="../nbbuild/javadoctools/apichanges.xsl"?>
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../nbbuild/javadoctools/apichanges.dtd">
+
+<!--
+
+INFO FOR PEOPLE ADDING CHANGES:
+
+Check the DTD (apichanges.dtd) for details on the syntax. You do not
+need to regenerate the HTML, as this is part of Javadoc generation; just
+change the XML. Rough syntax of a change (several parts optional):
+
+<change>
+    <api name="compiler"/>
+    <summary>Some brief description here, can use <b>XHTML</b></summary>
+    <version major="1" minor="99"/>
+    <date day="13" month="6" year="2001"/>
+    <author login="jrhacker"/>
+    <compatibility addition="yes"/>
+    <description>
+        The main description of the change here.
+        Again can use full <b>XHTML</b> as needed.
+    </description>
+    <class package="org.openide.compiler" name="DoWhatIWantCompiler"/>
+    <issue number="14309"/>
+</change>
+
+Also permitted elements: <package>, <branch>. <version> is API spec
+version, recommended for all new changes. <compatibility> should say
+if things were added/modified/deprecated/etc. and give all information
+related to upgrading old code. List affected top-level classes and
+link to issue numbers if applicable. See the DTD for more details.
+
+Changes need not be in any particular order, they are sorted in various
+ways by the stylesheet anyway.
+
+Dates are assumed to mean "on the trunk". If you *also* make the same
+change on a stabilization branch, use the <branch> tag to indicate this
+and explain why the change was made on a branch in the <description>.
+
+Please only change this file on the trunk! Rather: you can change it
+on branches if you want, but these changes will be ignored; only the
+trunk version of this file is important.
+
+Deprecations do not count as incompatible, assuming that code using the
+deprecated calls continues to see their documented behavior. But do
+specify deprecation="yes" in <compatibility>.
+
+This file is not a replacement for Javadoc: it is intended to list changes,
+not describe the complete current behavior, for which ordinary documentation
+is the proper place.
+
+-->
+
+<apichanges>
+
+    <!-- First, a list of API names you may use: -->
+    <apidefs>
+        <apidef name="java-api-common">Java Common API</apidef>
+    </apidefs>
+
+    <!-- ACTUAL CHANGES BEGIN HERE: -->
+    <changes>
+        <change id="CommonProjectUtils.createJavaLibraryImplementation">
+            <api name="java-api-common"/>
+            <summary>Added a helper method creating <code>LibraryImplementation3</code> for ant and maven projects.</summary>
+            <version major="1" minor="40"/>
+            <date day="5" month="9" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a helper method creating default implementation of the <code>LibraryImplementation3</code>
+                    interface for both Ant and Maven projects.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.util" name="CommonProjectUtils"/>
+            <issue number="217340"/>
+        </change>
+        <change id="ClassPathModifierSupport-handleAntArtifacts">
+            <api name="java-api-common"/>
+            <summary>Added <code>ClassPathModifierSupport.handleAntArtifacts</code> correctly updating the build-impl.xml</summary>
+            <version major="1" minor="38"/>
+            <date day="31" month="5" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>ClassPathModifierSupport.handleAntArtifacts</code> which removes the unused artifact reference and
+                    correctly regenerates the build-impl.xml not to build the removed project.
+                    Added <code>ClassPathModifierSupport.handleRoots</code> which removes the unused file reference.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathModifierSupport"/>
+            <issue number="213175"/>
+        </change>
+        <change id="PlatformUiSupport-preferred-platform">
+            <api name="java-api-common"/>
+            <summary>Added <code>PlatformUiSupport.storePlatform</code> with <code>updatePreferredPlatform</code> parameter</summary>
+            <version major="1" minor="37"/>
+            <date day="20" month="5" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>PlatformUiSupport.storePlatform</code> with <code>updatePreferredPlatform</code> parameter allowing
+                    the API clients to specify if the <code>PreferredProjectPlatform</code> should be updated.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformUiSupport"/>
+            <issue number="208528"/>
+        </change>
+        <change id="ant-hooks">
+            <api name="java-api-common"/>
+            <summary>Added methods to track ant invocation</summary>
+            <version major="1" minor="29"/>
+            <date day="25" month="4" year="2011"/>
+            <author login="phejl"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added methods to track ant invocation from subclasses.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+            <issue number="197838"/>
+        </change>
+        <change id="source-level-query-2">
+            <api name="java-api-common"/>
+            <summary>Added a factory method to create SourceLevelQueryImplementation2</summary>
+            <version major="1" minor="22"/>
+            <date day="8" month="7" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method to create default ant project based SourceLevelQueryImplementation2.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="185031"/>
+        </change>
+        <change id="sources-support">
+            <api name="java-api-common"/>
+            <summary>Support for mutable Sources</summary>
+            <version major="1" minor="21"/>
+            <date day="3" month="6" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Adding a factory method for creating a mutable Sources implemenation which allows adding (removing)
+                    of roots.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common" name="Roots"/>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="148320"/>
+        </change>
+        <change id="action-provider">
+            <api name="java-api-common"/>
+            <summary>BaseActionProvider introduced</summary>
+            <version major="1" minor="20"/>
+            <date day="1" month="6" year="2010"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    J2SE implementations of ActionProvider was turned into friend API
+                    so that EE project types can reuse most of Java specific code
+                    without duplicating it.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+            <issue number="171153"/>
+        </change>
+        <change id="ap-query">
+            <api name="java-api-common"/>
+            <summary>Support for AnnotationProcessingQuery</summary>
+            <version major="1" minor="14"/>
+            <date day="26" month="1" year="2010"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Adding support for AnnotationProcessingQuery, and related API changes.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectProperties"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="EditMediator"/>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="179749"/>
+        </change>
+
+        <change id="endorsed-classpath">
+            <api name="java-api-common"/>
+            <summary>Add support for endorsed libraries</summary>
+            <version major="1" minor="11"/>
+            <date day="7" month="10" year="2009"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Add ability to create bootclasspath with given endorsed libraries.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathSupportFactory"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathSupport"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+            <issue number="172952"/>
+        </change>
+        <change id="java-code-refactoring">
+            <api name="java-api-common"/>
+            <summary>Refactor reusable code from J2SE project type and make it available
+            for other project types (eg. J2EE/Web).</summary>
+            <version major="1" minor="5"/>
+            <date day="28" month="10" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Make code implementing J2SE support in project type reusable.
+                    Originally around NetBeans 4.0 most of this code was copy and pasted
+                    from java.j2seproject to several other project types and kept in synch
+                    ever since. This change eliminates duplicity of the code and refactors
+                    as much of J2SE support specific code to java.api.common module as possible.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathExtender"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathModifier"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathModifierSupport"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathSupportFactory"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathSupport"/>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectProperties"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="ClassPathUiSupport"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="JavaSourceNodeFactory"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="LibrariesNode"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="LogicalViewProvider2"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="ProjectUISupport"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="AntArtifactItem"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="ClassPathListCellRenderer"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="CustomizerProvider2"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="EditMediator"/>
+            <class package="org.netbeans.modules.java.api.common.project.ui.customizer" name="SourceRootsUi"/>
+            <issue number="150357"/>
+        </change>
+        <change id="ProjectInfoImpl">
+            <api name="java-api-common"/>
+            <summary>Reusable implementation of ProjectInformation</summary>
+            <version major="1" minor="18"/>
+            <date day="18" month="5" year="2010"/>
+            <author login="mvfranz"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Created a reusable implementation of ProjectInformation that can be
+                    used within the Java language projects.  Provide two factory methods
+                    for creation in QuerySupport, one that uses AntProjectHelper and one
+                    that uses UpdateHelper. 
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+            <issue number="110886"/>
+        </change>
+
+    </changes>
+
+    <!-- Now the surrounding HTML text and document structure: -->
+
+    <htmlcontents>
+<!--
+
+                            NO NO NO NO NO!
+
+         ==============>    DO NOT EDIT ME!  <==============
+
+          AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
+
+                SEE j2eeserver/apichanges.xml
+
+-->
+    <head>
+      <title>Change History for the Java Common API</title>
+      <link rel="stylesheet" href="prose.css" type="text/css"/>
+    </head>
+    <body>
+
+<p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
+
+<h1>Introduction</h1>
+
+<p>This document lists changes made to the Java Common API.</p>
+
+<!-- The actual lists of changes, as summaries and details: -->
+      <hr/>
+      <standard-changelists module-code-name="org.netbeans.modules.java.api.common"/>
+
+      <hr/><p>@FOOTER@</p>
+
+    </body>
+  </htmlcontents>
+
+</apichanges>

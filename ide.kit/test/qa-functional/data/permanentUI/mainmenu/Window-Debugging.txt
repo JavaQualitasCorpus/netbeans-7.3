@@ -1,0 +1,16 @@
+Debugging               > Variables                 V
+                          Watches                   W
+                          Call Stack                k
+                          Loaded Classes            C
+                          Breakpoints               B
+                          Sessions                  n
+                          Threads                   T
+                          Expression Evaluation
+                          Sources                   S
+                          Debugging                 D
+                          Disassembly               m
+                          HTTP Server Monitor       H
+                          Memory                    o
+                          Registers                 R
+                          ========================
+                          Debugger Console

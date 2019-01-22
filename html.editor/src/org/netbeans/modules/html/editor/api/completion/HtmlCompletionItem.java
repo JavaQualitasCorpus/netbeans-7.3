@@ -1,0 +1,780 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+package org.netbeans.modules.html.editor.api.completion;
+
+import java.util.Arrays;
+import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.netbeans.modules.html.editor.completion.*;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.net.URL;
+import javax.swing.ImageIcon;
+import javax.swing.text.Caret;
+import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.spi.editor.completion.*;
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.event.KeyEvent;
+import java.beans.FeatureDescriptor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
+import org.netbeans.modules.html.editor.HtmlPreferences;
+import org.netbeans.modules.html.editor.javadoc.HelpManager;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.xml.XMLUtil;
+
+/**
+ * Code completion result item base class
+ *
+ * @author Dusan Balek, Marek Fukala
+ */
+public class HtmlCompletionItem implements CompletionItem {
+
+    protected static final int DEFAULT_SORT_PRIORITY = 20;
+
+    //----------- Factory methods --------------
+    public static HtmlCompletionItem createTag(HtmlTag tag, String name, int substitutionOffset, String helpId, boolean possible) {
+        return new Tag(tag, name, substitutionOffset, helpId, possible);
+    }
+
+    public static HtmlCompletionItem createEndTag(HtmlTag tag, String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
+        return new EndTag(tag, name, substitutionOffset, helpId, order, type);
+    }
+
+    public static HtmlCompletionItem createEndTag(String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
+        return new EndTag(name, substitutionOffset, helpId, order, type);
+    }
+
+    public static HtmlCompletionItem createAutocompleteEndTag(String name, int substitutionOffset) {
+        return new AutocompleteEndTag(name, substitutionOffset);
+    }
+
+    public static HtmlCompletionItem createBooleanAttribute(String name, int substitutionOffset, boolean required, String helpId) {
+        return new BooleanAttribute(name, substitutionOffset, required, helpId);
+    }
+
+    public static HtmlCompletionItem createAttribute(HtmlTagAttribute attribute, String name, int substitutionOffset, boolean required, String helpId) {
+        return new Attribute(attribute, name, substitutionOffset, required, helpId);
+    }
+
+    public static HtmlCompletionItem createAttributeValue(String name, int substitutionOffset, boolean addQuotation) {
+        return new AttributeValue(name, substitutionOffset, addQuotation);
+    }
+
+    public static HtmlCompletionItem createAttributeValue(String name, int substitutionOffset) {
+        return createAttributeValue(name, substitutionOffset, false);
+    }
+
+    public static HtmlCompletionItem createCharacterReference(String name, char value, int substitutionOffset, String helpId) {
+        return new CharRefItem(name, value, substitutionOffset, helpId);
+    }
+
+    public static HtmlCompletionItem createFileCompletionItem(String value, int substitutionOffset, Color color, ImageIcon icon) {
+        return new FileAttributeValue(value, substitutionOffset, color, icon);
+    }
+
+    public static HtmlCompletionItem createGoUpFileCompletionItem(int substitutionOffset, Color color, ImageIcon icon) {
+        return new GoUpFileAttributeValue(substitutionOffset, color, icon);
+    }
+    //------------------------------------------
+    protected int substitutionOffset;
+    protected String text, helpId;
+    protected boolean shift;
+    protected HelpItem help;
+
+    protected HtmlCompletionItem(HelpItem help, String text, int substitutionOffset, String helpId) {
+        this(text, substitutionOffset, helpId);
+        this.help = help;
+    }
+
+    protected HtmlCompletionItem(String text, int substituteOffset) {
+        this.substitutionOffset = substituteOffset;
+        this.text = text;
+    }
+
+    protected HtmlCompletionItem(String text, int substituteOffset, String helpId) {
+        this(text, substituteOffset);
+        this.helpId = helpId;
+    }
+
+    public String getItemText() {
+        return text;
+    }
+
+    @Override
+    public int getSortPriority() {
+        return DEFAULT_SORT_PRIORITY;
+    }
+
+    @Override
+    public CharSequence getSortText() {
+        return getItemText();
+    }
+
+    @Override
+    public CharSequence getInsertPrefix() {
+        return getItemText();
+    }
+
+    @Override
+    public void processKeyEvent(KeyEvent e) {
+        shift = (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED && e.isShiftDown());
+    }
+
+    @Override
+    public void defaultAction(JTextComponent component) {
+        if (component != null) {
+            if (!shift) {
+                Completion.get().hideDocumentation();
+                Completion.get().hideCompletion();
+            }
+            int caretOffset = component.getSelectionEnd();
+            int len = caretOffset - substitutionOffset;
+            if (len >= 0) {
+                substituteText(component, len);
+            }
+        }
+
+    }
+
+    protected int getMoveBackLength() {
+        return 0; //default
+    }
+
+    /**
+     * Subclasses may override to customize the completed text if they do not
+     * want to override the substituteText method.
+     */
+    protected String getSubstituteText() {
+        return getItemText();
+    }
+
+    protected boolean substituteText(JTextComponent c, int len) {
+        return substituteText(c, len, getMoveBackLength());
+    }
+
+    protected boolean substituteText(final JTextComponent c, final int len, int moveBack) {
+        return substituteText(c, getSubstituteText(), len, moveBack);
+    }
+
+    protected boolean substituteText(final JTextComponent c, final String substituteText, final int len, int moveBack) {
+        final BaseDocument doc = (BaseDocument) c.getDocument();
+        final boolean[] result = new boolean[1];
+        result[0] = true;
+
+        doc.runAtomic(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //test whether we are trying to insert sg. what is already present in the text
+                    String currentText = doc.getText(substitutionOffset, (doc.getLength() - substitutionOffset) < substituteText.length() ? (doc.getLength() - substitutionOffset) : substituteText.length());
+                    if (!substituteText.equals(currentText)) {
+                        //remove common part
+                        doc.remove(substitutionOffset, len);
+                        doc.insertString(substitutionOffset, substituteText, null);
+                    } else {
+                        c.setCaretPosition(c.getCaret().getDot() + substituteText.length() - len);
+                    }
+                } catch (BadLocationException ex) {
+                    result[0] = false;
+                }
+
+            }
+        });
+
+        //format the inserted text
+        reindent(c);
+
+        if (moveBack != 0) {
+            Caret caret = c.getCaret();
+            int dot = caret.getDot();
+            caret.setDot(dot - moveBack);
+        }
+
+        return result[0];
+    }
+
+    private void reindent(JTextComponent component) {
+
+        final BaseDocument doc = (BaseDocument) component.getDocument();
+        final int dotPos = component.getCaretPosition();
+        final Indent indent = Indent.get(doc);
+        indent.lock();
+        try {
+            doc.runAtomic(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        int startOffset = Utilities.getRowStart(doc, dotPos);
+                        int endOffset = Utilities.getRowEnd(doc, dotPos);
+                        indent.reindent(startOffset, endOffset);
+                    } catch (BadLocationException ex) {
+                        //ignore
+                    }
+                }
+            });
+        } finally {
+            indent.unlock();
+        }
+
+    }
+
+    @Override
+    public boolean instantSubstitution(JTextComponent component) {
+        if (component != null) {
+            try {
+                int caretOffset = component.getSelectionEnd();
+                if (caretOffset > substitutionOffset) {
+                    String currentText = component.getDocument().getText(substitutionOffset, caretOffset - substitutionOffset);
+                    if (!getSubstituteText().toString().startsWith(currentText)) {
+                        return false;
+                    }
+                }
+            } catch (BadLocationException ble) {
+            }
+        }
+        defaultAction(component);
+        return true;
+    }
+
+    @Override
+    public int getPreferredWidth(Graphics g, Font defaultFont) {
+        return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(), g, defaultFont);
+    }
+
+    @Override
+    public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
+        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
+    }
+
+    protected ImageIcon getIcon() {
+        return null;
+    }
+
+    protected String getLeftHtmlText() {
+        return getItemText();
+    }
+
+    protected String getRightHtmlText() {
+        return null;
+    }
+
+    public String getHelpId() {
+        return this.helpId;
+    }
+
+    /**
+     * Returns a url or null, if the help is not URL or the help is not defined.
+     */
+    public URL getHelpURL() {
+        if (helpId == null || helpId.equals("")) {
+            return null;
+        }
+        try {
+            return new URL(helpId);
+        } catch (java.io.IOException e) {
+        }
+        return null;
+    }
+
+    /**
+     * Returns help for the item. It can be only url. If the item doesn't have a
+     * help than returns null. The class can overwrite this method and compounds
+     * the help realtime.
+     */
+    public String getHelp() {
+        return HelpManager.getDefault().getHelp(helpId);
+    }
+
+    private boolean hasLegacyHelp() {
+        return (helpId != null && helpId.length() > 0);
+    }
+
+    public boolean hasHelp() {
+        return getHelpItem() != null || hasLegacyHelp();
+    }
+
+    @Override
+    public CompletionTask createDocumentationTask() {
+        return new AsyncCompletionTask(new HtmlCompletionProvider.DocQuery(this, false));
+    }
+
+    @Override
+    public CompletionTask createToolTipTask() {
+        return null;
+    }
+
+    public HelpItem getHelpItem() {
+        return help;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HtmlCompletionItem other = (HtmlCompletionItem) obj;
+        if (this.substitutionOffset != other.substitutionOffset) {
+            return false;
+        }
+        if ((this.text == null) ? (other.text != null) : !this.text.equals(other.text)) {
+            return false;
+        }
+        if ((this.helpId == null) ? (other.helpId != null) : !this.helpId.equals(other.helpId)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + this.substitutionOffset;
+        hash = 97 * hash + (this.text != null ? this.text.hashCode() : 0);
+        hash = 97 * hash + (this.helpId != null ? this.helpId.hashCode() : 0);
+        return hash;
+    }
+
+    //------------------------------------------------------------------------------
+    /**
+     * Completion item representing a JSP tag including its prefix eg.
+     * <jsp:useBean />
+     */
+    public static class Tag extends HtmlCompletionItem {
+
+        private static final ImageIcon HTML_TAG_ICON =
+                ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/html_element.png", false); // NOI18N
+        private static final ImageIcon SVG_TAG_ICON =
+                ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/class.png", false); // NOI18N
+        private static final ImageIcon MATHML_TAG_ICON =
+                ImageUtilities.loadImageIcon("org/netbeans/modules/html/editor/resources/mathml.png", false); // NOI18N
+        private String GRAY_COLOR_CODE = hexColorCode(Color.GRAY);
+        private boolean possible;
+        private HtmlTag tag;
+
+        protected Tag(HtmlTag tag, String name, int substitutionOffset, String helpId, boolean possible) {
+            super(tag.getHelp(), name, substitutionOffset, helpId);
+            this.tag = tag;
+            this.possible = possible;
+        }
+
+        protected Tag(String text, int substitutionOffset, String helpId, boolean possible) {
+            super(text, substitutionOffset, helpId);
+            this.possible = possible;
+        }
+
+        //end tag autocomplete handling
+        @Override
+        public void defaultAction(JTextComponent component) {
+            super.defaultAction(component);
+        }
+
+        @Override
+        protected String getSubstituteText() {
+            return "<" + getItemText();
+        }
+
+        @Override
+        public int getSortPriority() {
+            return super.getSortPriority() + (possible ? -10 : 0);
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return possible
+                    ? "<font color=#0000ff>&lt;" + getItemText() + "&gt;</font>" : //NOI18N
+                    "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>"; //NOI18N
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            return null;
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            if (tag != null) {
+                switch (tag.getTagClass()) {
+                    case HTML:
+                        return HTML_TAG_ICON;
+                    case SVG:
+                        return SVG_TAG_ICON;
+                    case MATHML:
+                        return MATHML_TAG_ICON;
+                    default:
+                        return null;
+                }
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public boolean hasHelp() {
+            return tag != null && tag.getHelp() != null || super.hasHelp();
+        }
+    }
+
+    /**
+     * Completion item representing a JSP tag including its prefix eg.
+     * <jsp:useBean />
+     */
+    public static class EndTag extends HtmlCompletionItem {
+
+        public enum Type {
+
+            DEFAULT(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY), //NOI18N
+            OPTIONAL_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
+            OPTIONAL_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10), //NOI18N
+            REQUIRED_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
+            REQUIRED_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10); //NOI18N
+            private String colorCode;
+            private boolean bold;
+            private int sortPriority;
+
+            private Type(String colorCode, boolean bold, int sortPriority) {
+                this.colorCode = colorCode;
+                this.bold = bold;
+                this.sortPriority = sortPriority;
+            }
+        }
+        private int orderIndex;
+        private Type type;
+        private HtmlTag tag;
+
+        EndTag(HtmlTag tag, String name, int substitutionOffset, String helpId, int order, Type type) {
+            super(tag.getHelp(), name, substitutionOffset, helpId);
+            this.orderIndex = order;
+            this.type = type;
+            this.tag = tag;
+        }
+
+        EndTag(String text, int substitutionOffset, String helpId, int order, Type type) {
+            super(text, substitutionOffset, helpId);
+            this.orderIndex = order;
+            this.type = type;
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            if (orderIndex == -1) {
+                return super.getSortText();
+            } else {
+                char[] result = new char[Integer.toString(Integer.MAX_VALUE).length()];
+                char[] orderIndexChars = Integer.toString(orderIndex).toCharArray();
+                Arrays.fill(result, '0'); //NOI18N
+                System.arraycopy(orderIndexChars, 0, result, result.length - orderIndexChars.length, orderIndexChars.length);
+
+                return new String(result);
+            }
+        }
+
+        @Override
+        protected String getSubstituteText() {
+            return "</" + getItemText() + ">"; //NOI18N
+        }
+
+        @Override
+        public int getSortPriority() {
+            return this.type.sortPriority;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return (type.bold ? "<b>" : "") + //NOI18N
+                    "<font color=#" + type.colorCode + ">&lt;/" + getItemText() + "&gt;</font>" + //NOI18N
+                    (type.bold ? "</b>" : ""); //NOI18N
+        }
+
+        @Override
+        public boolean hasHelp() {
+            return tag != null && tag.getHelp() != null || super.hasHelp();
+        }
+    }
+
+    public static class AutocompleteEndTag extends EndTag {
+
+        public AutocompleteEndTag(String text, int substitutionOffset) {
+            super(text, substitutionOffset, null, -1, Type.DEFAULT);
+        }
+
+        @Override
+        protected int getMoveBackLength() {
+            return getSubstituteText().length(); //jump before the completed tag
+        }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;
+        }
+    }
+
+    /**
+     * Completion item representing html entity reference.
+     */
+    public static class CharRefItem extends HtmlCompletionItem {
+
+        private char value;
+
+        CharRefItem(String name, char value, int substitutionOffset, String helpId) {
+            super(name, substitutionOffset, helpId);
+            this.value = value;
+        }
+
+        @Override
+        protected String getSubstituteText() {
+            return "&" + getItemText() + ";"; //NOI18N
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<b>&amp;" + escape(getItemText()) + ";</b>"; //NOI18N
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            String strVal;
+            if (value == '>') { //NOI18N
+                strVal = "&gt;"; //NOI18N
+            } else if (value == '<') { //NOI18N
+                strVal = "&lt;"; //NOI18N
+            } else {
+                strVal = Character.toString(value);
+            }
+            return "<b><font color=#990000>" + strVal + "</font></b>"; //NOI18N
+        }
+    }
+
+    /**
+     * Item representing a JSP attribute value.
+     */
+    public static class AttributeValue extends HtmlCompletionItem {
+
+        private boolean addQuotation;
+
+        public AttributeValue(String value, int offset, boolean addQuotation) {
+            super(value, offset);
+            this.addQuotation = addQuotation;
+        }
+
+        @Override
+        protected String getSubstituteText() {
+            return addQuotation ? "\"" + super.getSubstituteText() + "\"" : super.getSubstituteText();
+        }
+    }
+
+    public static class Attribute extends HtmlCompletionItem {
+
+        private boolean required;
+        private boolean autocompleteQuotes;
+        private HtmlTagAttribute attr;
+        protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
+
+        public Attribute(HtmlTagAttribute attr, String value, int offset, boolean required, String helpId) {
+            super(attr.getHelp(), value, offset, helpId);
+            this.attr = attr;
+            this.required = required;
+            this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
+        }
+
+        public Attribute(String value, int offset, boolean required, String helpId) {
+            super(value, offset, helpId);
+            this.required = required;
+            this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
+        }
+
+        @Override
+        protected String getSubstituteText() {
+            return getItemText() + (autocompleteQuotes ? "=\"\"" : ""); //NOI18N
+        }
+
+        @Override
+        protected int getMoveBackLength() {
+            return autocompleteQuotes ? 1 : 0; //last quotation
+        }
+
+        @Override
+        public int getSortPriority() {
+            return super.getSortPriority() - (required ? 1 : 0);
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return (required ? "<b>" : "") + //NOI18N
+                    "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N
+                    (required ? "</b>" : ""); //NOI18N
+        }
+
+        @Override
+        public boolean hasHelp() {
+            return attr != null && attr.getHelp() != null || super.hasHelp();
+        }
+    }
+
+    public static class BooleanAttribute extends HtmlCompletionItem {
+
+        private boolean required;
+        protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
+
+        public BooleanAttribute(String value, int offset, boolean required, String helpId) {
+            super(value, offset, helpId);
+            this.required = required;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return (required ? "<b>" : "") + //NOI18N
+                    "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N
+                    (required ? "</b>" : ""); //NOI18N
+        }
+    }
+
+    /**
+     * Item representing a File attribute
+     */
+    public static class FileAttributeValue extends HtmlCompletionItem implements PropertyChangeListener, LazyCompletionItem {
+
+        private javax.swing.ImageIcon icon;
+        private Color color;
+        private boolean visible = false;
+
+        FileAttributeValue(String text, int substitutionOffset, Color color, javax.swing.ImageIcon icon) {
+            super(text, substitutionOffset);
+            this.color = color;
+            this.icon = icon;
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            return icon;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<font color='" + hexColorCode(color) + "'>" + getItemText() + "</font>"; //NOI18N
+        }
+
+        private void iconLoaded(ImageIcon icon) {
+            this.icon = icon;
+            if(visible) {
+                repaintCompletionView_EDT();
+            }
+        }
+        
+        private void repaintCompletionView_EDT() {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    repaintCompletionView();
+                }
+            });
+        }
+
+        private static void repaintCompletionView() {
+            try {
+                Completion completion = Completion.get();
+                Class<? extends Completion> clz = completion.getClass();
+                Method method = clz.getDeclaredMethod("repaintCompletionView"); //NOI18N
+                method.setAccessible(true);
+                method.invoke(completion);
+            } catch (Exception e) {
+                //ignore
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals("iconLoaded")) { //NOI18N
+                iconLoaded((ImageIcon)evt.getNewValue());
+            }
+        }
+
+        @Override
+        public boolean accept() {
+            visible = true;
+            return true;
+        }
+    }
+
+    public static class GoUpFileAttributeValue extends FileAttributeValue {
+
+        GoUpFileAttributeValue(int substitutionOffset, Color color, javax.swing.ImageIcon icon) {
+            super("../", substitutionOffset, color, icon); //NOI18N
+        }
+
+        @Override
+        public int getSortPriority() {
+            return super.getSortPriority() - 1; //be first of the file compl. items
+        }
+    }
+
+    public static String hexColorCode(Color c) {
+        return Integer.toHexString(c.getRGB()).substring(2);
+    }
+
+    private static String escape(String s) {
+        if (s != null) {
+            try {
+                return XMLUtil.toAttributeValue(s);
+            } catch (Exception ex) {
+            }
+        }
+        return s;
+    }
+}

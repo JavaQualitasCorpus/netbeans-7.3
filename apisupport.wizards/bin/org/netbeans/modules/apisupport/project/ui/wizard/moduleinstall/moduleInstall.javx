@@ -1,0 +1,17 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
+
+import org.openide.modules.ModuleInstall;
+
+public class ${CLASS_NAME} extends ModuleInstall {
+
+    @Override
+    public void restored() {
+        // TODO
+    }
+
+}

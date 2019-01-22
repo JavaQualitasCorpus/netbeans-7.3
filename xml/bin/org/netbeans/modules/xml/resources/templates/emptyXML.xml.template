@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="${fileEncoding}"?>
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "">
+<#assign licenseLast = "-->">
+<#include "../Licenses/license-${project.license}.txt">
+
+${doctype}
+<${rootTagNs}${nsDeclarations}>
+    ${generatedContent}
+</${rootTagNs}>

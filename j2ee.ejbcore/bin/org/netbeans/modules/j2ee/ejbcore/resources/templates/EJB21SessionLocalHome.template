@@ -1,0 +1,19 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../../Licenses/license-${project.license}.txt">
+
+package ${package};
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBLocalHome;
+
+/**
+ *
+ * @author ${user}
+ */
+public interface ${name} extends EJBLocalHome {
+    
+    ${localInterface} create()  throws CreateException;
+
+}

@@ -1,0 +1,20 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../../Licenses/license-${project.license}.txt">
+
+package ${package};
+
+import javax.ejb.Remote;
+
+/**
+ *
+ * @author ${user}
+ */
+@Remote
+public interface ${name} {
+
+<#if timerExist && exposeTimer>
+    public void myTimer();
+</#if>
+}

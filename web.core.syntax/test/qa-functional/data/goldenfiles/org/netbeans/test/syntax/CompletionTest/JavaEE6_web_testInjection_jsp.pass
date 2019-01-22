@@ -1,0 +1,140 @@
+[${|}, NamedWithName beruska, ${beruska}, 361]
+applicationScope[]
+NamedWithName beruska
+cookie[]
+javax.faces.context.FacesConte
+header[]
+headerValues[]
+initParam[]
+MyManagedBean myManagedBean
+NamedBean namedBean
+javax.servlet.jsp.PageContext 
+pageScope[]
+param[]
+paramValues[]
+requestScope[]
+sessionScope[]
+ManagedBeanWithName slunicko
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
+End cursor position = 371
+[${|}, MyManagedBean myManagedBean, ${myManagedBean}, 425]
+applicationScope[]
+NamedWithName beruska
+cookie[]
+javax.faces.context.FacesConte
+header[]
+headerValues[]
+initParam[]
+MyManagedBean myManagedBean
+NamedBean namedBean
+javax.servlet.jsp.PageContext 
+pageScope[]
+param[]
+paramValues[]
+requestScope[]
+sessionScope[]
+ManagedBeanWithName slunicko
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
+End cursor position = 441
+[${|}, NamedBean namedBean, ${namedBean}, 476]
+applicationScope[]
+NamedWithName beruska
+cookie[]
+javax.faces.context.FacesConte
+header[]
+headerValues[]
+initParam[]
+MyManagedBean myManagedBean
+NamedBean namedBean
+javax.servlet.jsp.PageContext 
+pageScope[]
+param[]
+paramValues[]
+requestScope[]
+sessionScope[]
+ManagedBeanWithName slunicko
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
+End cursor position = 488
+[${|}, ManagedBeanWithName slunicko, ${slunicko}, 535]
+applicationScope[]
+NamedWithName beruska
+cookie[]
+javax.faces.context.FacesConte
+header[]
+headerValues[]
+initParam[]
+MyManagedBean myManagedBean
+NamedBean namedBean
+javax.servlet.jsp.PageContext 
+pageScope[]
+param[]
+paramValues[]
+requestScope[]
+sessionScope[]
+ManagedBeanWithName slunicko
+javax.faces.component.UIViewRo
+and
+div
+empty
+eq
+false
+ge
+gt
+instanceof
+le
+lt
+mod
+ne
+not
+null
+or
+true
+End cursor position = 546
